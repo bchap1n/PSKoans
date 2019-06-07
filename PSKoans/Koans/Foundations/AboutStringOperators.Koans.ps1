@@ -42,17 +42,17 @@ Describe 'String Comparison Operators' {
             $String = 'this is a string.'
             $OtherString = 'This is a string.'
 
-            __ | Should -Be ($String -eq $OtherString)
+            $String -eq $OtherString | Should -Be __
             # Watch out for case sensitive operators!
-            __ | Should -Be ($String -ceq $OtherString)
+            $String -ceq $OtherString | Should -Be __
         }
 
         It 'is useful for a straightforward comparison' {
             $String = 'one more string!'
             $OtherString = "ONE MORE STRING!"
 
-            __ | Should -Be ($String -ne $OtherString)
-            __ | Should -Be ($String -cne $OtherString)
+            $String -ne $OtherString | Should -Be __
+            $String -cne $OtherString | Should -Be __
         }
     }
 
@@ -62,8 +62,8 @@ Describe 'String Comparison Operators' {
             $String = 'my string'
             $OtherString = 'your string'
 
-            __ | Should -Be ($String -gt $OtherString)
-            __ | Should -Be ($String -lt $OtherString)
+            $String -gt $OtherString | Should -Be __
+            $String -lt $OtherString | Should -Be __
         }
     }
 }
@@ -95,14 +95,14 @@ Describe 'String Array Operators' {
             $String -split '\.' | Should -Be @('__', '__')
         }
 
-        It 'can limit the number of substrings' {
-            $Planets = 'Mercury,Venus,Earth,Mars,Jupiter,Saturn,Uranus,Neptune'
-            $Planets -split ',', 4 | Should -Be @('__', '__', '__', '__')
-        }
-
         It 'can use simple matching' {
             $String = 'hello.dear'
             $String -split '.', 0, 'simplematch' | Should -Be @('__', '__')
+        }
+
+        It 'can limit the number of substrings' {
+            $Planets = 'Mercury,Venus,Earth,Mars,Jupiter,Saturn,Uranus,Neptune'
+            $Planets -split ',', 4 | Should -Be @('__', '__', '__', '__')
         }
 
         It 'can be case sensitive' {

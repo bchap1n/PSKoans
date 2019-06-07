@@ -24,19 +24,19 @@ Describe 'Equality' {
 
     It 'is a simple comparison' {
         # Some truths are absolute.
-        __ | Should -Be $true
+        $true | Should -Be $true
     }
 
     It 'expects you to fill in values' {
         # Initiative will be rewarded.
-        __ | Should -Be (1 + 2)
-        __ + 5 -eq 10 | Should -BeTrue
+        3 | Should -Be (1 + 2)
+        5 + 5 -eq 10 | Should -BeTrue
     }
 
     It 'sets the expectations' {
         # Many roads converge, yet some paths are less clear.
         $ExpectedValue = 1 + 1
-        $ActualValue = __
+        $ActualValue = 2
 
         $ExpectedValue -eq $ActualValue | Should -BeTrue
     }
@@ -45,6 +45,6 @@ Describe 'Equality' {
 
     It 'demands balance' {
         # Both sides of the scale must be of equal measure.
-        __ + 2 -eq 3 | Should -BeTrue
+        1 + 2 -eq 3 | Should -BeTrue
     }
 }

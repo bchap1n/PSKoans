@@ -17,12 +17,12 @@ Describe 'Variable Assignment' {
     It 'gives a name to a value or object' {
         # Names give succinct descriptions to pieces of reality.
         $Fifty = 50
-        $Value = __
+        $Value = $Fifty
 
         Set-Variable -Name 'Greeting' -Value 'Hello!'
 
         $Value -eq $Fifty | Should -BeTrue
-        __ | Should -Be $Greeting
+        $Greeting | Should -Be 'Hello!'
     }
 
     <#
@@ -33,17 +33,17 @@ Describe 'Variable Assignment' {
     It 'infers types on its own' {
         $Number = 10
 
-        $Number | Should -BeOfType [__]
+        $Number | Should -BeOfType [Int]
     }
 
     It 'can directly compare types' {
         # For each task, a different tool.
         $Number = 5
         $Number -is [int] | Should -BeTrue
-        $Number | Should -BeOfType [__]
+        $Number | Should -BeOfType [int]
 
         $Text = 'Every worthwhile step is uphill.'
-        $ExpectedType = __
+        $ExpectedType = [string]
 
         $ExpectedType | Should -Be $Text.GetType()
     }
@@ -56,8 +56,8 @@ Describe 'Variable Assignment' {
         # Its contents may choose their own kind, or it be chosen for them.
         $String = [string]$true
 
-        $Number | Should -BeOfType [__]
-        $String | Should -BeOfType [__]
+        $Number | Should -BeOfType [Int]
+        $String | Should -BeOfType [string]
     }
 
     It 'distinguishes between types of numbers' {
@@ -70,7 +70,7 @@ Describe 'Variable Assignment' {
         $NotInteger = 12.0
 
         $Integer | Should -BeOfType [int]
-        $NotInteger | Should -BeOfType [__]
+        $NotInteger | Should -BeOfType [double]
     }
 
     It 'allows you to declare constant variables' {
@@ -79,7 +79,7 @@ Describe 'Variable Assignment' {
             # The next operation will never succeed; constant variables cannot be altered.
             # Try uncommenting the below line to see what happens.
 
-            # $Constant = 'NewValue'
+             $Constant = 'NewValue'
         } | Should -Throw
         {
             # Contrast Read-Only variables, which can be later removed

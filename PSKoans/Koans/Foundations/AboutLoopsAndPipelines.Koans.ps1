@@ -59,7 +59,7 @@ Describe 'Pipelines and Loops' {
         $Strings = 3..7 |
             ForEach-Object {"Hello $_!"} | # Line breaks after a pipe character are OK!
             Where-Object {$_ -notlike '*5*'} # (Indents are optional.)
-        __ | Should -Be $Strings
+        $Strings | Should -Be __
     }
 
     It 'is like a specialised loop' {
@@ -74,7 +74,7 @@ Describe 'Pipelines and Loops' {
             #>
             $Number
         }
-        __ | Should -Be $Values
+        $Values | Should -Be __
 
         $Values = for ($i = 0; $i -lt 5; $i++) {
             # For loops are quite rare in native PowerShell code. They have their uses, but are
@@ -102,7 +102,7 @@ Describe 'Pipelines and Loops' {
                 break # the break statement breaks out of the current loop.
             }
         }
-        __ | Should -Be $Values
+        $Values | Should -Be __
 
         <#
             There are some other types of loops available, but these are the main ones.
@@ -116,6 +116,6 @@ Describe 'Pipelines and Loops' {
         $Values = do {
             'eat me!'
         } while ($false) # had we put our while at the head of the loop, there would be zero iterations
-        __ | Should -Be $Values
+        $Values | Should -Be __
     }
 }

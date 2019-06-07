@@ -33,20 +33,6 @@ Describe 'Assignment Operator' {
         $Array[2] = 5
         $Array | Should -Be @(1, 2, 3) # What would change?
     }
-
-    It 'can assign values to many variables at once' {
-        $Var1 = $Var2 = $Var3 = $Var4 = __
-        $Var1 | Should -Be $Var2
-        $Var2 | Should -Be $Var3
-        $Var3 | Should -Be $Var4
-        $Var4 | Should -Be 27
-    }
-
-    It 'can assign multiple values to multiple variables' {
-        $Var1, $Var2 = @( "__", "__")
-        $Var1 | Should -Be "Correct"
-        $Var2 | Should -Be "Incorrect"
-    }
 }
 
 Describe 'Arithmetic Operators' {
@@ -59,11 +45,11 @@ Describe 'Arithmetic Operators' {
         It 'is used to add two items together' {
             13 + 4 | Should -Be 17
             __ + 6 | Should -Be 13
-            __ | Should -Be (13.7 + 4)
+            13.7 + 4 | Should -Be __
         }
 
         It 'can be used to concatenate strings' {
-            __ | Should -Be ('hello' + 'world')
+            'hello' + 'world' | Should -Be __
             'My name is ' + 'Jim' | Should -Be 'My name is Jim'
         }
 
@@ -82,27 +68,25 @@ Describe 'Arithmetic Operators' {
         It 'behaves according to the type of the left-hand item' {
             '10.5' + 11 | Should -Be 21.5 # Or should it?
 
-            __ | Should -Be (11 + '12.5')
+            11 + '12.5' | Should -Be __
             12.21 + 'FILL_ME_IN' -eq 23.43 | Should -BeTrue
 
             # Adding items into typed arrays will also cause the resulting value to be converted
-            [int[]] $Array = @(1, 2, 3, 4, 5)
-            $Array += '17'
-            __ | Should -Be $Array
+            [int[]]@(1, 2, 3, 4, 5) + '17' | Should -Be __
         }
     }
     Context 'Subtraction' {
 
         It 'works similarly to addition' {
             12 - 7 | Should -Be 5
-            __ | Should -Be (11 - 3.5)
+            11 - 3.5 | Should -Be __
         }
 
         It 'cannot be used with strings' {
             {'hello' - 'h'} | Should -Throw
 
             # Except, of course, when the string contains a useable number.
-            __ | Should -Be ('12' - '7.5')
+            '12' - '7.5' | Should -Be __
 
             # In other words, subtraction only operates on numerical values.
             {@(1, 2) - 1} | Should -Throw
@@ -112,7 +96,7 @@ Describe 'Arithmetic Operators' {
     Context 'Multiplication' {
 
         It 'can be used on both integer and non-integer numerals' {
-            __ | Should -Be (12 * 4)
+            12 * 4 | Should -Be __
             12.1 * 2 | Should -Be 24.2
         }
 
@@ -147,13 +131,10 @@ Describe 'Arithmetic Operators' {
 
         It 'cannot be used on non-numeric values' {
             {
-                # Some things are better seen when you try them for yourself.
                 $String = 'hello!'
                 $String % 4
-                # Only a partially matching phrase from the error message is necessary.
             }  | Should -Throw -ExpectedMessage __
             {
-                # If you have trouble, try doing something similar in the console to see what happens.
                 $Array = 1, 10, 20
                 $Array % 4
             } | Should -Throw -ExpectedMessage __
@@ -175,18 +156,18 @@ Describe 'Assignment/Arithmetic Combination Operators' {
         $Value | Should -Be 19
 
         $Value -= 3
-        __ | Should -Be $Value
+        $Value | Should -Be __
 
         # We can even combine multiplication and division with assignment
         $Value /= 2
         $Value | Should -Be 8
 
         $Value *= 3
-        __ | Should -Be $Value
+        $Value | Should -Be __
 
         # Modulus hasn't been left out, either.
         $Value = 12
         $Value %= 4
-        __ | Should -Be $Value
+        $Value | Should -Be __
     }
 }

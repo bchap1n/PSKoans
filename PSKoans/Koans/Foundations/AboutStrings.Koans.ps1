@@ -15,14 +15,14 @@ param()
 Describe 'Strings' {
 
     It 'is a simple string of text' {
-        __ | Should -Be 'string'
+        'string' | Should -Be __
     }
 
     Context 'Literal Strings' {
 
         It 'assumes everything is literal' {
             $var = 'Some things you must take literally'
-            __ | Should -Be $var
+            $var | Should -Be __
         }
 
         It 'can contain special characters' {
@@ -43,24 +43,24 @@ Describe 'Strings' {
 
         It 'can expand variables' {
             $var = 'apple'
-            '__' | Should -Be "My favorite fruit is $var"
+            "My favorite fruit is $var" | Should -Be '__'
         }
 
         It 'can do a simple expansion' {
-            '__' | Should -Be "Your home directory is located here: $HOME"
+            $Windows = Get-Item 'C:\Windows' | Select-Object -ExpandProperty FullName
+            "The windows directory is located here: $Windows" | Should -Be '__'
         }
 
         It 'handles other ways of doing the same thing' {
-            # Strings can handle entire subexpressions being inserted as well!
-            $String = "Your home folder is: $(Get-Item $HOME)"
-            '__' | Should -Be $String
+            $String = "The windows directory is located at $(Get-Item 'C:\Windows')"
+            $String | Should -Be '__'
         }
 
         It 'can escape special characters with backticks' {
             $LetterA = 'Apple'
             $String = "`$LetterA contains $LetterA."
 
-            '__' | Should -Be $String
+            $String | Should -Be '__'
         }
 
         It 'can escape quotation marks' {
@@ -72,28 +72,10 @@ Describe 'Strings' {
         }
 
         It 'can insert special characters with escape sequences' {
-            <#
-                All text strings in PowerShell are actually just a series of character values. Each of these values
-                has a specific number assigned in the [char] type that represents that letter, number, space, symbol,
-                etc.
-
-                .NET uses UTF16 encoding for [char] and [string] values. However, with most common letters, numbers,
-                and symbols the assigned [char] values are identical to the ASCII values.
-
-                ASCII is an older standard encoding for text, but you can still use all those values as-is with
-                [char] and get back what you'd expect thanks to the design of the UTF16 encoding. An extended ASCII
-                code table is available at: https://www.ascii-code.com/
-            #>
             $ExpectedValue = [char] 9
-
-            <#
-                If you're not sure what character you're after, consult the ASCII code table above.
-
-                Get-Help about_Special_Characters will list the escape sequence you can use to create
-                the right character with PowerShell's native string escape sequences.
-            #>
             $ActualValue = "`_"
 
+            # Look over Get-Help about_Special_Characters for the escape sequence you need.
             $ActualValue | Should -Be $ExpectedValue
         }
     }
@@ -123,8 +105,8 @@ Describe 'Strings' {
             # Few things require the entirety of the library.
             $String = 'At the very top!'
 
-            '__' | Should -Be $String.Substring(0, 6)
-            '__' | Should -Be $String.Substring(7)
+            $String.Substring(0, 6) | Should -Be '__'
+            $String.Substring(7) | Should -Be '__'
         }
     }
 
@@ -150,20 +132,18 @@ Describe 'Strings' {
         It 'can be an evaluated string' {
             # The key is in the patterns.
             $Number = __
-
-            # These can mess with indentation rules, but have their uses nonetheless!
             $String = @"
 I am number #$Number!
-"@
+"@ # These can mess with indentation patterns, but have their uses nonetheless!
 
-            '__' | Should -Be $String
+            $String | Should -Be '__'
         }
 
         It 'allows use of quotation marks easily' {
             $AllYourQuotes = @"
 All things that are not 'evaluated' are "recognised" as characters.
 "@
-            '__' | Should -Be $AllYourQuotes
+            $AllYourQuotes | Should -Be '__'
         }
     }
 }

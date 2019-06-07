@@ -66,7 +66,7 @@ Describe 'Hashtables' {
             $Hashtable.Add('Age', 52)
             $Hashtable.Add('Radiation', 'Infrared')
 
-            __ | Should -Be $Hashtable['Age']
+            $Hashtable['Age'] | Should -Be __
         }
     }
 
@@ -82,7 +82,7 @@ Describe 'Hashtables' {
             $HashtableTwo['Age'] = 21
 
             $HashtableOne['Age'] | Should -Be 12 # Right?
-            __ | Should -Be $HashtableTwo['Age']
+            $HashtableTwo['Age'] | Should -Be __
         }
 
         It 'can be cloned' {
@@ -98,7 +98,7 @@ Describe 'Hashtables' {
             $HashtableTwo['Contents'] = 'Chips'
 
             $HashtableOne['Meal Type'] | Should -Be '__'
-            __ | Should -Be $HashtableOne['Calories']
+            $HashtableOne['Calories'] | Should -Be __
 
             $HashtableTwo['Contents'] | Should -Be '__'
         }
@@ -134,8 +134,8 @@ Describe 'Hashtables' {
 
             # Order comes at a price; in this case, lookup speed is significantly decreased with ordered hashtables.
             # Does this leave our keys and values in the order you would expect?
-            @('__', 'Two', '__', '__') | Should -Be $Hashtable.Keys.ForEach{$_}
-            @(1, , , 4) | Should -Be $Hashtable.Values.ForEach{$_}
+            @('__', 'Two', '__', '__') | Should -Be $Hashtable.Keys
+            @(1, , , 4) | Should -Be $Hashtable.Values
         }
 
         It 'allows you to remove keys' {
@@ -148,7 +148,7 @@ Describe 'Hashtables' {
 
             $Hashtable.Remove('One')
 
-            __ | Should -Be $Hashtable.Count
+            $Hashtable.Count | Should -Be __
             $Hashtable.Keys | Should -Be @('__', '__', 'Four')
             $Hashtable.Values | Should -Be @( , , 4)
         }
