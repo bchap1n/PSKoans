@@ -81,9 +81,9 @@ Context 'Out-* Cmdlets' {
         It 'stores data in files' {
             $Path = 'TestDrive:\File.txt'
 
-            'Stored knowledge is of little value until it is used.' | Out-File -Path $Path -NoNewline
+            'Stored knowledge is of little value until it is used.' | Out-File -FilePath $Path -NoNewline
 
-            '__' | Should -Be (Get-Content -Path $Path)
+            '____' | Should -Be (Get-Content -Path $Path)
         }
     }
 
@@ -103,7 +103,7 @@ Context 'Out-* Cmdlets' {
         # Out-Null discards any input sent to it, making it very useful for suppressing output.
 
         It 'does absolutely nothing with output sent to it' {
-            $String = '__'
+            $String = '____'
             $String | Should -Be 'What can you learn to do today that you have never ben able to do before?'
 
             $String | Out-Null | Should -BeNullOrEmpty
@@ -117,23 +117,20 @@ Context 'Out-* Cmdlets' {
         #>
 
         It 'creates string representations of data' {
-            $HomeFolder = Get-Item -Path $HOME
+            #Create a hashtable that pipes into Out-String
+            $ExpectedString = @{ ____ = '____'; Spectrum = '____' } | Out-String
 
-            $HomeFolder | Should -Not -BeNullOrEmpty
-            $String = $HomeFolder | Out-String
+            $ActualString = @"
 
-            # Fill in this here-string with the data you'd see in your console from calling Get-Item $HOME
-            @"
-
-
-    Directory: __
+Name                           Value
+----                           -----
+Color                          Blue
+Spectrum                       Ultraviolet
 
 
-Mode                LastWriteTime         Length Name
-----                -------------         ------ ----
-______         __________________                ____
-"@ | Should -Be $String
-            # Mind the indentations; here-strings have to terminate at the very beginning of a line.
+
+"@ # Mind the indentations; here-strings have to terminate at the very beginning of a line.
+            $ActualString | Should -Be $ExpectedString
         }
     }
 }

@@ -8,7 +8,12 @@ Properties {
 
     $Timestamp = Get-Date -Format "yyyyMMdd-hhmmss"
     $PSVersion = $PSVersionTable.PSVersion
-    $TestFile = "TestResults_PS${PSVersion}_${TimeStamp}.xml"
+    $TestFile = "PS${PSVersion}_${TimeStamp}_PSKoans.TestResults.xml"
+    $CodeCoverageFile = "PS${PSVersion}_${TimeStamp}_PSKoans.CodeCoverage.xml"
+    $ModuleFolders = @(
+        Get-ChildItem -Path "$ProjectRoot/PSKoans" -Directory -Recurse |
+            Where-Object { 'Koans' -notin $_.Parent.Name, $_.Parent.Parent.Name }
+    ).FullName -join ';'
     $Lines = '-' * 70
 
     $Continue = @{
@@ -48,19 +53,24 @@ STATUS: Testing with PowerShell $PSVersion
     $env:PSModulePath = '{0}{1}{2}' -f $ProjectRoot, ([System.IO.Path]::PathSeparator), $env:PSModulePath
     Import-Module 'PSKoans'
 
+    # Tell Azure where the test results & code coverage files will be
+    Write-Host "##vso[task.setvariable variable=TestResults]$TestFile"
+    Write-Host "##vso[task.setvariable variable=CodeCoverageFile]$CodeCoverageFile"
+    Write-Host "##vso[task.setvariable variable=SourceFolders]$ProjectRoot/PSKoans;$ModuleFolders"
+
     # Gather test results. Store them in a variable and file
     $PesterParams = @{
-        Path         = "$ProjectRoot/Tests"
-        PassThru     = $true
-        OutputFormat = 'NUnitXml'
-        OutputFile   = "$ProjectRoot/$TestFile"
-        Show         = "Header", "Failed", "Summary"
+        Path                   = "$ProjectRoot/Tests"
+        PassThru               = $true
+        OutputFormat           = 'NUnitXml'
+        OutputFile             = "$env:BUILD_ARTIFACTSTAGINGDIRECTORY/$TestFile"
+        Show                   = "Header", "Failed", "Summary"
+        CodeCoverage           = (Get-ChildItem -Recurse -Path "$ProjectRoot/PSKoans" -Filter '*.ps*1' -Exclude '*.Koans.ps1').FullName
+        CodeCoverageOutputFile = "$env:BUILD_ARTIFACTSTAGINGDIRECTORY/$CodeCoverageFile"
     }
     $TestResults = Invoke-Pester @PesterParams
 
     [Net.ServicePointManager]::SecurityProtocol = $SecurityProtocol
-
-    Remove-Item -Path "$ProjectRoot/$TestFile" -Force -ErrorAction SilentlyContinue
 
     # Failed tests?
     # Need to tell psake or it will proceed to the deployment. Danger!
@@ -91,4 +101,7 @@ Failed to update version for '$env:BHProjectName': $_.
 Continuing with existing version.
 "@
     }
+
+    # Build external help files from Platyps MD files
+    New-ExternalHelp -Path "$ProjectRoot/docs/" -OutputPath "$ProjectRoot/PSKoans/en-us"
 }

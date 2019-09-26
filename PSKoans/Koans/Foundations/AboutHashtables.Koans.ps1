@@ -34,34 +34,33 @@ Describe 'Hashtables' {
                 Spectrum = 'Ultraviolet'
             }
 
-            $Hashtable | Should -BeOfType __
             # Values in the hashtable can be retrieved by specifying their corresponding key
-            $Hashtable['Color'] | Should -Be '__'
-            $Hashtable['Spectrum'] | Should -Be '__'
+            '____' | Should -Be $Hashtable['Color']
+            '____' | Should -Be $Hashtable['Spectrum']
 
-            $Hashtable | Should -BeOfType '__'
+            $____ | Should -BeOfType [hashtable]
         }
 
         It 'can be built all in one line' {
-            $Hashtable = @{Name = 'Bob'; Species = 'Tardigrade'; Weakness = 'Phys'}
+            $Hashtable = @{ Name = 'Bob'; Species = 'Tardigrade'; Weakness = 'Phys' }
 
-            $Hashtable['Species'] | Should -Be '__'
+            '____' | Should -Be $Hashtable['Species']
         }
 
         It 'can be built in pieces' {
-            $Hashtable = @{}
+            $Hashtable = @{ }
             # By specifying a key, we can insert or overwrite values in the hashtable
             $Hashtable['Name'] = 'Hashtable'
             $Hashtable['Color'] = 'Red'
             $Hashtable['Spectrum'] = 'Infrared'
             $Hashtable['Spectrum'] = 'Microwave'
 
-            $Hashtable['Color'] | Should -Be '__'
-            $Hashtable['Spectrum'] | Should -Be '__'
+            '____' | Should -Be $Hashtable['Color']
+            '____' | Should -Be $Hashtable['Spectrum']
         }
 
         It 'can be built using the Hashtable object methods' {
-            $Hashtable = @{}
+            $Hashtable = @{ }
             $Hashtable.Add('Name', 'John')
             $Hashtable.Add('Age', 52)
             $Hashtable.Add('Radiation', 'Infrared')
@@ -73,6 +72,11 @@ Describe 'Hashtables' {
     Context 'Working with Hashtables' {
 
         It 'is a reference type' {
+            <#
+                Like many objects, hashtables typically get passed by reference;
+                assigning the object to another variable does not create a second copy,
+                only a second way to refer to the original object.
+            #>
             $HashtableOne = @{
                 Name = 'Jim'
                 Age  = 12
@@ -81,8 +85,13 @@ Describe 'Hashtables' {
             $HashtableTwo = $HashtableOne
             $HashtableTwo['Age'] = 21
 
+<<<<<<< HEAD
             $HashtableOne['Age'] | Should -Be 12 # Right?
             $HashtableTwo['Age'] | Should -Be __
+=======
+            $HashtableOne['Age'] | Should -Be 12 # Or is it?
+            __ | Should -Be $HashtableTwo['Age']
+>>>>>>> upstream/master
         }
 
         It 'can be cloned' {
@@ -97,36 +106,49 @@ Describe 'Hashtables' {
             $HashtableTwo['Calories'] = 250
             $HashtableTwo['Contents'] = 'Chips'
 
+<<<<<<< HEAD
             $HashtableOne['Meal Type'] | Should -Be '__'
             $HashtableOne['Calories'] | Should -Be __
+=======
+            '____' | Should -Be $HashtableOne['Meal Type']
+            __ | Should -Be $HashtableOne['Calories']
+>>>>>>> upstream/master
 
-            $HashtableTwo['Contents'] | Should -Be '__'
+            '____' | Should -Be $HashtableTwo['Contents']
         }
 
         It 'allows you to retrieve a list of keys or values' {
-            $Hashtable = @{One = 1; Two = 2; Three = 3; Four = 4}
+            $Hashtable = @{ One = '1'; Two = '2'; Three = '3'; Four = '4' }
 
-            $Hashtable.Keys | Should -Be @('__', '__', '__', '__')
-            $Hashtable.Values | Should -Be @( )
+            @( 'One', '____', '____', '____' ) | Should -BeIn $Hashtable.Keys
+            @( '__', '__', '__', '__' ) | Should -BeIn $Hashtable.Values
         }
 
         It 'is not ordered' {
             # Hashtables are ordered by hashing their keys for extremely quick lookups.
-            $Hashtable = @{One = 1; Two = 2; Three = 3; Four = 4}
+            $Hashtable = @{ One = 1; ____ = 2; Three = 3; Four = __ }
 
-            # You will find your key/value pairs are often not at all in the order you entered them.
-            # This _probably_ won't pass.
-            $Hashtable.Keys | Should -Be @('One', 'Two', 'Three', 'Four')
-            $Hashtable.Values | Should -Be @(1, 2, 3, 4)
+            <#
+                You will find your key/value pairs are often not at all in the order you entered them.
+                Trying to predict the order of the pairs like this can be very difficult.
+                The following assertions would be highly likely to fail.
 
-            # The order can and will change again, as well, if the collection is changed.
+                    $Hashtable.Keys | Should -Be @('One', 'Two', 'Three', 'Four')
+                    $Hashtable.Values | Should -Be @(1, 2, 3, 4)
+
+                The order can and will change again, as well, if the collection is altered.
+            #>
+
             $Hashtable['Five'] = 5
 
-            $Hashtable.Keys | Should -Be @('One', 'Two', 'Three', 'Four', 'Five')
-            $Hashtable.Values | Should -Be @(1, 2, 3, 4, 5)
+            $Hashtable.Keys | Should -Not -Be @('One', 'Two', 'Three', 'Four', 'Five')
+            $Hashtable.Values | Should -Not -Be @(1, 2, 3, 4, 5)
+
+            $Hashtable.Keys | Should -BeIn @('____', 'Two', '____', 'Four', 'Five')
         }
 
         It 'can be forced to retain order' {
+<<<<<<< HEAD
             $Hashtable = [ordered]@{One = 1; Two = 2; Three = 3; Four = 4}
 
             # The [ordered] tag is not in itself properly a type, but transforms our regular hashtable into...
@@ -136,6 +158,24 @@ Describe 'Hashtables' {
             # Does this leave our keys and values in the order you would expect?
             @('__', 'Two', '__', '__') | Should -Be $Hashtable.Keys
             @(1, , , 4) | Should -Be $Hashtable.Values
+=======
+            <#
+                The [ordered] tag is only valid when paired with a hashtable literal declaration;
+                it's not a valid type on its own.
+            #>
+            $Hashtable = [ordered]@{ One = 1; Two = 2; Three = 3; Four = 4 }
+
+            <#
+                Order comes at a price; in this case, lookup speed is significantly decreased with
+                ordered hashtables.
+                Does this leave our keys and values in the order you would expect?
+            #>
+            @( '__', 'Two', '__', '__' ) | Should -Be $Hashtable.Keys.ForEach{ $_ }
+            @( 1, , , 4 ) | Should -Be $Hashtable.Values.ForEach{ $_ }
+
+            # The [ordered] tag is not in itself properly a type, but changes the type of the object completely.
+            'System.____.____.____' | Should -Be $Hashtable.GetType().FullName
+>>>>>>> upstream/master
         }
 
         It 'allows you to remove keys' {
@@ -148,9 +188,15 @@ Describe 'Hashtables' {
 
             $Hashtable.Remove('One')
 
+<<<<<<< HEAD
             $Hashtable.Count | Should -Be __
             $Hashtable.Keys | Should -Be @('__', '__', 'Four')
             $Hashtable.Values | Should -Be @( , , 4)
+=======
+            __ | Should -Be $Hashtable.Count
+            $Hashtable.Keys | Should -BeIn @('__', '__', 'Four')
+            $Hashtable.Values | Should -BeIn @( , , 4)
+>>>>>>> upstream/master
         }
 
         It 'can check if keys or values are present in the hashtable' {
@@ -166,18 +212,18 @@ Describe 'Hashtables' {
         }
 
         It 'will not implicitly convert keys and lookup values' {
-            $Hashtable = @{0 = 'Zero'}
+            $Hashtable = @{ 0 = 'Zero' }
 
-            $Hashtable[0] | Should -Be '__'
-            $Hashtable['0'] | Should -Be '__'
+            '__' | Should -Be $Hashtable[0]
+            '__' | Should -Be $Hashtable['0']
         }
 
         It 'can access values by using keys like properties' {
-            $Hashtable = @{0 = 'Zero'; Name = 'Jim'}
+            $Hashtable = @{ 0 = 'Zero'; Name = 'Jim' }
             $Key = '__'
 
-            $Hashtable.0 | Should -Be '__'
-            $Hashtable.$Key | Should -Be 'Jim'
+            '__' | Should -Be $Hashtable.0
+            'Jim' | Should -Be $Hashtable.$Key
         }
     }
 }

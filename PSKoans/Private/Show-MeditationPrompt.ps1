@@ -58,37 +58,24 @@ function Show-MeditationPrompt {
         $Complete,
 
         [Parameter(Mandatory, ParameterSetName = 'Meditation')]
-        [ValidateScript(
-            {
-                $MissingKeys = switch ($_) {
-                    { $_.Keys -notcontains 'Name' } { 'Name' }
-                    { $_.Keys -notcontains 'Completed' } { 'Completed' }
-                    { $_.Keys -notcontains 'Total' } { 'Total' }
-                }
-
-                $ErrorString = if ($MissingKeys) {
-                    "Hashtable bound to -CurrentTopic was missing required keys: {0}" -f ($MissingKeys -join ',')
-                }
-                elseif ($_.Keys.Count -gt 3) {
-                    'Hashtable bound to -CurrentTopic should only have keys: Name, Completed, Total.'
-                }
-
-                if ($ErrorString) { throw $ErrorString }
-                else { $true }
-            }
-        )]
-        [hashtable]
+        [PSObject]
         $CurrentTopic,
 
         [Parameter()]
         [string[]]
-        $RequestedTopic
+        $RequestedTopic,
+
+        [Parameter()]
+        [PSObject[]]
+        $Results
     )
     begin {
-        $Red = @{ForegroundColor = 'Red'}
-        $Blue = @{ForegroundColor = 'Cyan'}
-        $White = @{ForegroundColor = 'Yellow'}
-        $Koan = ($script:MeditationStrings | Get-Random) -replace '^|\r?(\n)', ('$1    {0} ' -f [char]0x258c)
+        $Red = @{ForegroundColor = 'Red' }
+        $Blue = @{ForegroundColor = 'Cyan' }
+        $White = @{ForegroundColor = 'Yellow' }
+        $Green = @{ForegroundColor = 'Green' }
+
+        $Koan = (Get-Random -InputObject $script:MeditationStrings) -replace '^|\r?(\n)', ('$1    {0} ' -f [char]0x258c)
         $TopicList = ($RequestedTopic -join "`n        - ")
 
         # Get the first usable value for the console width
@@ -108,7 +95,7 @@ function Show-MeditationPrompt {
                 Write-Host @Red $Expectation
 
                 Write-Host @Blue $script:MeditationPrompts['Meditate']
-                Write-Host @Red ($script:MeditationPrompts['Subject'] -f $ItName, $Meditation)
+                Write-Host @Red ($script:MeditationPrompts['Subject'] -f [char]0xd7, $ItName, $Meditation)
 
                 Write-Host @White ($script:MeditationPrompts['Koan'] -f $Koan)
 
@@ -124,7 +111,7 @@ function Show-MeditationPrompt {
                 Write-Host @Blue $script:MeditationPrompts['Path']
 
                 Write-Verbose 'Calculating progress...'
-                $TopicProgressAmount = "{0}/{1}" -f $CurrentTopic['Completed'], $CurrentTopic['Total']
+                $TopicProgressAmount = "{0}/{1}" -f $CurrentTopic.Completed, $CurrentTopic.Total
                 $TotalProgressAmount = "$KoansPassed/$TotalKoans"
 
                 [int] $ProgressWidth = $ConsoleWidth * 0.65 - ($TotalProgressAmount.Width + 12)
@@ -132,25 +119,42 @@ function Show-MeditationPrompt {
 
                 #region TopicProgressBar
                 if ($RequestedTopic.Count -ne 1) {
-                    [int] $PortionDone = ($CurrentTopic['Completed'] / $CurrentTopic['Total']) * $TopicProgressWidth
+                    [int] $PortionDone = ($CurrentTopic.Completed / $CurrentTopic.Total) * $TopicProgressWidth
 
-                    " [{3}]: [{0}{1}] {2}" -f @(
-                        "$([char]0x25b0)" * $PortionDone
+                    $ProgressBar = " [{3}]: [{0}{1}] {2}" -f @(
+                        "$([char]0x25a0)" * $PortionDone
                         "$([char]0x2015)" * ($TopicProgressWidth - $PortionDone)
                         $TopicProgressAmount
-                        $CurrentTopic['Name']
-                    ) | Write-Host @Blue
+                        $CurrentTopic.Name
+                    )
+                    Write-Host $ProgressBar @Blue
                 }
                 #endregion TopicProgressBar
+                Write-Host
+
+                if ($PSBoundParameters.ContainsKey('Results')) {
+                    foreach ($KoanResult in $Results) {
+                        $Params = @{
+                            Object = $script:MeditationPrompts['DetailEntry'] -f @(
+                                if ($KoanResult.Passed) { [char]0x25b8 } else { [char]0xd7 }
+                                $KoanResult.Name
+                            )
+                        }
+                        $Params += if ($KoanResult.Passed) { $Green } else { $Red }
+                        Write-Host @Params
+                    }
+                }
+
                 Write-Host
                 #region TotalProgressBar
                 [int] $PortionDone = ($KoansPassed / $TotalKoans) * $ProgressWidth
 
-                " [Total]: [{0}{1}] {2}" -f @(
-                    "$([char]0x25b0)" * $PortionDone
+                $ProgressBar = " [Total]: [{0}{1}] {2}" -f @(
+                    "$([char]0x25a0)" * $PortionDone
                     "$([char]0x2015)" * ($ProgressWidth - $PortionDone)
                     $TotalProgressAmount
-                ) | Write-Host @Blue
+                )
+                Write-Host $ProgressBar @Blue
 
                 Write-Host @Blue $script:MeditationPrompts['OpenFolder']
                 #endregion TotalProgressBar
@@ -158,7 +162,7 @@ function Show-MeditationPrompt {
                 break
             }
             'Enlightened' {
-                if ($PSBoundParameters.ContainsKey('Topic')) {
+                if ($PSBoundParameters.ContainsKey('RequestedTopic')) {
                     Write-Host @Blue ($script:MeditationPrompts['CompletedTopic'] -f ($RequestedTopic -join ', '))
                 }
                 else {
@@ -169,13 +173,14 @@ function Show-MeditationPrompt {
                 [int]$ProgressWidth = $host.UI.RawUI.WindowSize.Width * 0.8 - ($TotalProgressAmount.Length + 4)
                 $PortionDone = ($KoansPassed / $TotalKoans) * $ProgressWidth
 
-                " [{0}{1}] {2}" -f @(
+                $ProgressBar = " [{0}{1}] {2}" -f @(
                     "$([char]0x25a0)" * $PortionDone
                     "$([char]0x2015)" * ($ProgressWidth - $PortionDone)
                     $TotalProgressAmount
-                ) | Write-Host @Blue
+                )
+                Write-Host $ProgressBar @Blue
 
-                if (-not $PSBoundParameters.ContainsKey('Topic')) {
+                if (-not $PSBoundParameters.ContainsKey('RequestedTopic')) {
                     Write-Host @Blue $script:MeditationPrompts['BookSuggestion']
                 }
 

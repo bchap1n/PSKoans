@@ -24,7 +24,11 @@ Describe 'Equality' {
 
     It 'is a simple comparison' {
         # Some truths are absolute.
+<<<<<<< HEAD
         $true | Should -Be $true
+=======
+        '__' | Should -Be 'True!'
+>>>>>>> upstream/master
     }
 
     It 'expects you to fill in values' {

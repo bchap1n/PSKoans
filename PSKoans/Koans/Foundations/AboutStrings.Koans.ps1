@@ -84,7 +84,7 @@ Describe 'Strings' {
 
         It 'adds strings together' {
             # Two become one.
-            $String1 = 'This string'
+            $String1 = '_____'
             $String2 = 'is cool.'
 
             $String1 + ' ' + $String2 | Should -Be 'This string is cool.'
@@ -144,6 +144,37 @@ I am number #$Number!
 All things that are not 'evaluated' are "recognised" as characters.
 "@
             $AllYourQuotes | Should -Be '__'
+        }
+    }
+
+    Context 'Arrays and Strings' {
+        <#
+            An array can be inserted into a string in PowerShell.
+        #>
+        It 'joins using a space by default' {
+            $array = @(
+                'Hello'
+                'world'
+            )
+            '____ ____' | Should -Be "$array"
+        }
+
+        It 'can be joined with a different string by setting the ofs variable' {
+            <#
+                The $OFS variable, short for output field separator, defines the separator used
+                to join an array when it is included in a string.
+
+                By default, the OFS variable is unset, and a single space is used as the separator.
+            #>
+
+            $ofs = '... '
+            $array = @(
+                'Hello'
+                'world'
+            )
+            '____' | Should -Be "$array"
+
+            Remove-Variable ofs
         }
     }
 }

@@ -1,4 +1,4 @@
-.vscode/
 .vs/
+.DS_Store/
 *.temppoint.*
 PSKoans.psproj

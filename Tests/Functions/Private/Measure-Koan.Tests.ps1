@@ -1,131 +1,96 @@
-#Requires -Modules PSKoans
+#region Header
+if (-not (Get-Module PSKoans)) {
+   $moduleBase = Join-Path -Path $psscriptroot.Substring(0, $psscriptroot.IndexOf('\Tests')) -ChildPath 'PSKoans'
+
+    Import-Module $moduleBase -Force
+}
+#endregion
 
 InModuleScope 'PSKoans' {
-    Describe 'Initialize-KoanDirectory' {
+    Describe 'Measure-Koan' {
+        BeforeAll {
+            Set-Content -Path TestDrive:\TestCases.Koans.ps1 -Value @'
+                Describe 'Test cases param' {
+                    It 'first <TestCase>' -TestCases @(
+                        @{ TestCase = 1 }
+                        @{ TestCase = 2 }
+                        @{ TestCase = 3 }
+                    ) {
+                        param($TestCase)
 
-        Context 'Mocked Commands' {
-            BeforeAll {
-                Mock Remove-Item {}
-                Mock Copy-Item {}
-            }
-
-            Context 'Koan Folder Exists' {
-                BeforeAll {
-                    Mock Test-Path {$true}
-                }
-
-                It 'should not produce output' {
-                    Initialize-KoanDirectory -Confirm:$false | Should -BeNullOrEmpty
-                }
-
-                It 'should try to remove the existing folder and then copy files' {
-                    Assert-MockCalled Test-Path -Times 1
-                    Assert-MockCalled Remove-Item -Times 1
-                    Assert-MockCalled Copy-Item -Times 1
-                }
-            }
-
-            Context 'Koan Folder Does Not Exist' {
-                BeforeAll {
-                    Mock Test-Path {$false}
-                }
-
-                It 'should not produce output' {
-                    Initialize-KoanDirectory -Confirm:$false
-                }
-                It 'should just copy files' {
-                    Assert-MockCalled Test-Path -Times 1
-                    Assert-MockCalled Remove-Item -Times 0
-                    Assert-MockCalled Copy-Item -Times 1
-                }
-            }
-        }
-
-        Context 'Practical Tests with TestDrive' {
-            BeforeAll {
-                if (Get-PSKoanLocation) {
-                    $LocalKoanFolder = Get-PSKoanLocation
-                }
-
-                Set-PSKoanLocation -Path "TestDrive:/Koans"
-
-                $KoanFiles = Get-ChildItem -Path $script:ModuleRoot -Recurse -File -Filter '*.Koans.ps1' | ForEach-Object {
-                    @{File = $_.FullName -replace '.+[/\\]Koans[/\\]'}
-                }
-            }
-
-            Context 'Koan Folder Exists' {
-                BeforeAll {
-                    Get-PSKoanLocation | New-Item -Path {$_} -ItemType Directory > $null
-
-                    $DummyFiles = 1..10 | ForEach-Object {
-                        $FileName = '{0:000}' -f $_
-                        1..($_ * 10) | Set-Content -Path "$(Get-PSKoanLocation)/$FileName"
-                        @{ Path = "$(Get-PSKoanLocation)/$FileName" }
+                        $TestCase | Should -BeOfType int
                     }
                 }
+'@
 
-                It 'should not produce output' {
-                    Initialize-KoanDirectory -Confirm:$false | Should -BeNullOrEmpty
-                }
+                Set-Content -Path TestDrive:\JustIt.Koans.ps1 -Value @'
+                    Describe 'Just it' {
+                        It 'first' {
+                            $true | Should -BeTrue
+                        }
 
-                It 'should remove the file from: <Path>' -TestCases $DummyFiles {
-                    param($Path)
+                        It 'second' {
+                            $true | Should -BeTrue
+                        }
+                    }
+'@
 
-                    Test-Path -Path $Path | Should -BeFalse
-                }
+                Set-Content -Path TestDrive:\Mixed.Koans.ps1 -Value @'
+                    Describe 'Mixed' {
+                        It 'first' {
+                            $true | Should -BeTrue
+                        }
 
-                It 'should copy <File> to the Koans folder' -TestCases $KoanFiles {
-                    param($File)
+                        It 'second <TestCase>' -TestCases @(
+                            @{ TestCase = 1 }
+                            @{ TestCase = 2 }
+                        ) {
+                            param($TestCase)
 
-                    Get-PSKoanLocation |
-                        Join-Path -ChildPath $File |
-                        Test-Path |
-                        Should -BeTrue
+                            $TestCase | Should -BeOfType int
+                        }
+                    }
+'@
 
-                    $CopiedFile = Get-PSKoanLocation | Join-Path -ChildPath $File | Get-Item
-                    $OriginalFile = $script:ModuleRoot | Join-Path -ChildPath "Koans/$File" | Get-Item
+                Set-Content -Path TestDrive:\MutlipleTestCases.Koans.ps1 -Value @'
+                    Describe 'Test cases param' {
+                        It 'first <TestCase>' -TestCases @(
+                            @{ TestCase = 1 }
+                            @{ TestCase = 2 }
+                            @{ TestCase = 3 }
+                        ) {
+                            param($TestCase)
 
-                    $OriginalHash = Get-FileHash -Path $CopiedFile.FullName
-                    $CopiedHash = Get-FileHash -Path $OriginalFile.FullName
+                            $TestCase | Should -BeOfType int
+                        }
 
-                    # Verify the files are the same
-                    $CopiedFile.Length | Should -Be $OriginalFile.Length
-                    $CopiedHash.Hash | Should -Be $OriginalHash.Hash
-                }
+                        It 'second <TestCase>' -TestCases @(
+                            @{ TestCase = 1 }
+                            @{ TestCase = 2 }
+                            @{ TestCase = 3 }
+                        ) {
+                            param($TestCase)
+
+                            $TestCase | Should -BeOfType int
+                        }
+                    }
+'@
+        }
+
+        It 'counts the number of tests in <Path>' -TestCases @(
+            @{ Path = 'TestDrive:\TestCases.Koans.ps1';         ExpectedValue = 3 }
+            @{ Path = 'TestDrive:\JustIt.Koans.ps1';            ExpectedValue = 2 }
+            @{ Path = 'TestDrive:\Mixed.Koans.ps1';             ExpectedValue = 3 }
+            @{ Path = 'TestDrive:\MutlipleTestCases.Koans.ps1'; ExpectedValue = 6 }
+        ) {
+            param($Path, $ExpectedValue)
+
+            $koanInfo = [PSCustomObject]@{
+                Path       = $Path
+                PSTypeName = 'PSKoans.KoanInfo'
             }
 
-            Context 'Koan Folder Does Not Exist' {
-
-                It 'should not produce output' {
-                    Initialize-KoanDirectory -Confirm:$false | Should -BeNullOrEmpty
-                }
-
-                It 'should copy <File> to the Koans folder' -TestCases $KoanFiles {
-                    param($File)
-
-                    Get-PSKoanLocation |
-                        Join-Path -ChildPath $File |
-                        Test-Path |
-                        Should -BeTrue
-
-                    $CopiedFile = Get-PSKoanLocation | Join-Path -ChildPath $File | Get-Item
-                    $OriginalFile = $script:ModuleRoot | Join-Path -ChildPath "Koans/$File" | Get-Item
-
-                    $OriginalHash = Get-FileHash -Path $CopiedFile.FullName
-                    $CopiedHash = Get-FileHash -Path $OriginalFile.FullName
-
-                    # Verify the files are the same
-                    $CopiedFile.Length | Should -Be $OriginalFile.Length
-                    $CopiedHash.Hash | Should -Be $OriginalHash.Hash
-                }
-            }
-
-            AfterAll {
-                if ($LocalKoanFolder) {
-                    Set-PSKoanLocation -Path $LocalKoanFolder
-                }
-            }
+            $koanInfo | Measure-Koan | Should -Be $ExpectedValue
         }
     }
 }
